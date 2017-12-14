@@ -12,9 +12,15 @@ exports.handleRequest = function (req, res) {
   console.log('serving request: ' + req.method + ' for: ' + req.url);
   var q = url.parse(req.url);
   if (req.method === 'GET') {
-    if (q.pathname === '/') {
-    // console.log(path.join(archive.paths.siteAssets, '../index.html'))
-      console.log('hi', archive.paths.archivedSites);
+    if (q.pathname === '/sites') {
+      archive.readListOfUrls((data) => {
+        console.log(data)
+        var newHeaders = Object.assign({}, httpHelper.headers);
+        newHeaders['Content-Type'] = 'application/json';
+        res.writeHead(200, newHeaders);
+        res.end(JSON.stringify(data));
+      });
+    } else if (q.pathname === '/') {
       httpHelper.serveAssets(res, path.join(archive.paths.siteAssets, '../public/index.html'), function(data) {
         res.writeHead(200, httpHelper.headers);
         res.end(data);
@@ -26,24 +32,40 @@ exports.handleRequest = function (req, res) {
         res.writeHead(200, newHeaders);
         res.end(data);
       });
-    } else if (q.pathname === 'doody') {
-      
+    } else if (q.pathname === '/loading') {
+      httpHelper.serveAssets(res, path.join(archive.paths.siteAssets, '../public/loading.html'), function(data) {
+        res.writeHead(200, httpHelper.headers);
+        res.end(data);
+      });
+    } else {
+      res.writeHead(404, httpHelper.headers);
+      res.end();
     }
-  } else if (req.method === 'POST') {
+  } else if (req.method === 'POST' && q.pathname === '/' || q.pathname === '/loading') {
     var userInput = '';
     req.on('data', function(chunk) {
       userInput += chunk.slice(4);
     });
-    req.on('end', function() {
+    req.on('end', () => {
+      console.log(userInput);
       archive.isUrlInList(userInput, (isInside) => {
         if (isInside) {
-          console.log('is inside');
+          archive.isUrlArchived(userInput, (isArchived) => {
+            if (isArchived) {
+              httpHelper.serveAssets(res, path.join(archive.paths.archivedSites, archive.processUrl(userInput) + '.html'), function(data) {
+              console.log('getting archived site')
+                res.writeHead(200, httpHelper.headers);
+                res.end(data);
+              });
+            } else {
+              archive.readListOfUrls(archive.downloadUrls);
+            }
+          });
         } else {
-          console.log('is added');
+          res.writeHead(301, {Location: 'loading'});
+          res.end();
         }
       });
-      res.writeHead(301, {Location: 'localhost:3000'});
-      res.end();
     });
   }
   // res.end(archive.paths.list);

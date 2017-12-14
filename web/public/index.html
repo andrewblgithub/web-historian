@@ -2,11 +2,29 @@
 <html>
 <head>
   <link rel="stylesheet" type="text/css" href="styles.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 </head>
 <body>
   Enter a URL here:
   <form method="POST">
     <input type="input" name="url"></input>
   </form>
+
+  <ul id="sites">
+  </ul>
+  <script> 
+    $.get('http://localhost:8080/sites', function(data) {
+      data.forEach((site) => {
+        if (site.length > 0) {
+          $('#sites').append('<li>' + site + '</li>');
+        }
+      });
+      $('li').click((e)=> {
+        console.log(e.target.innerHTML);
+        $.post('http://localhost:8080/', 'url=' + e.target.innerHTML);
+      })
+    });
+
+  </script>
 </body>
 </html>
