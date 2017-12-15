@@ -4,14 +4,17 @@
   <link rel="stylesheet" type="text/css" href="styles.css" />
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 </head>
-<body>
-  Enter a URL here:
-  <form method="POST">
-    <input type="input" name="url"></input>
-  </form>
+  <div id='donttouch'>
+    Enter a URL here:
+    <form method="POST">
+      <input type="input" name="url"></input>
+    </form>
 
-  <ul id="sites">
-  </ul>
+    <ul id="sites">
+    </ul>
+    <div id="site"></div>
+  </div>
+<body>
   <script> 
     $.get('http://localhost:8080/sites', function(data) {
       data.forEach((site) => {
@@ -21,10 +24,19 @@
       });
       $('li').click((e)=> {
         console.log(e.target.innerHTML);
-        $.post('http://localhost:8080/', 'url=' + e.target.innerHTML);
-      })
-    });
+        $.post('http://localhost:8080/', 'url=' + e.target.innerHTML, (data) => {
+          console.log(data)
+          // $('#site').html(data)
 
+          document.getElementById("site").innerHTML='<object type="text/html" data=' + data + '></object>';
+          $('#donttouch').css({
+            'font-family': 'arial, sans-serif',
+            'font-size' : '14px'
+          });
+        });
+        
+      });
+    });
   </script>
 </body>
 </html>

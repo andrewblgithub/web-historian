@@ -1,5 +1,16 @@
-body {
+#donttouch {
   background-color: white;
   margin : 0px;
   font-family: arial, sans-serif;
+  float: top;
+
+}
+
+#site {
+  height: 80%;
+  position: absolute;
+  float: bottom;
+  display: block;
+  overflow-y: scroll;
+  width: 100%;
 }
